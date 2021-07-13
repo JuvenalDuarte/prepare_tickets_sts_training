@@ -123,7 +123,7 @@ def ingest_tickets():
     logger.info(f'Parsing customer satisfaction.')
     tickets_articles["satisfactionScore"] = tickets_articles["satisfaction_rating"].apply(parse_satisfaction_score)
 
-    logger.info(f'Parsing customer satisfaction.')
+    logger.info(f'Applying preprocessing.')
     tickets_articles["ticket_subject"] = tickets_articles["subject"].apply(preproc)
     tickets_articles["article_title"] = tickets_articles["title"].apply(preproc)
     tickets_articles["article_question"] = tickets_articles["question"].apply(preproc)
