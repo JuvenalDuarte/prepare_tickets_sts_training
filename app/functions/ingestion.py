@@ -82,10 +82,10 @@ def get_question_type(body):
 
 def parse_satisfaction_score(txt):
     try:
-        d = json.load(txt)
+        d = json.loads(txt)
         score = d["score"]
     except:
-        score = "bad"
+        score = "unparsed"
 
     return score
 
@@ -123,10 +123,19 @@ def ingest_tickets():
     logger.info(f'Parsing customer satisfaction.')
     tickets_articles["satisfactionScore"] = tickets_articles["satisfaction_rating"].apply(parse_satisfaction_score)
 
-    logger.info(f'Applying preprocessing.')
+    summary = tickets_articles.groupby(["satisfactionScore"])["ticket_id"].count().to_string()
+    logger.info(f'Satisfaction count summary: {summary}')
+
+    logger.info(f'Applying preprocessing to tickets subject.')
     tickets_articles["ticket_subject"] = tickets_articles["subject"].apply(preproc)
+
+    logger.info(f'Applying preprocessing to articles title.')
     tickets_articles["article_title"] = tickets_articles["title"].apply(preproc)
+
+    logger.info(f'Applying preprocessing to articles question.')
     tickets_articles["article_question"] = tickets_articles["question"].apply(preproc)
+
+    logger.info(f'Mapping satisfaction to expected similarity.')
     tickets_articles["similarity"] = tickets_articles["satisfactionScore"].apply(mapScoreTosimilarity)
 
     trainingset1 = tickets_articles[["ticket_subject", "article_title", "similarity"]].copy()
