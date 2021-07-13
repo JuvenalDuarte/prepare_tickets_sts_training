@@ -1,0 +1,6 @@
+pycarol[complete]
+python-dotenv
+python-json-logger
+unidecode
+ftfy
+beautifulsoup4

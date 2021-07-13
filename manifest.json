@@ -1,0 +1,41 @@
+{
+  "batch": {
+    "processes": [
+      {
+        "name": "ticketsststraining",
+        "algorithmName": "main",
+        "namespace": "",
+        "algorithmTitle": {
+          "pt-br": "Prepare Tickets STS Training",
+          "en-US": "Prepare Tickets STS Training"
+        },
+        "algorithmDescription": {
+          "pt-br": "Prepare Tickets STS Training",
+          "en-US": "Prepare Tickets STS Training"
+        },
+        "instanceProperties": {
+          "profile": "",
+          "properties": {
+            "dockerImage": "preparetickets/ticketsststraining:1.0.0",
+            "instanceType": "c1.small"
+          },
+          "environments": {
+            "ENV": "PROD",
+            "LOCALSCHEDULER": "True"
+          }
+        }
+      }
+    ]
+  },
+  "docker": [
+    {
+      "dockerName": "ticketsststraining",
+      "dockerTag": "1.0.0",
+      "gitBranch": "main",
+      "gitPath": "/",
+      "instanceType": "c1.small",
+      "gitDockerfileName": "Dockerfile", 
+      "gitRepoUrl": "https://github.com/JuvenalDuarte/prepare_tickets_sts_training"
+    }
+  ]
+}
