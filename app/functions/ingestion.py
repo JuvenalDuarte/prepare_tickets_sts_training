@@ -11,9 +11,9 @@ import ftfy
 
 logger = logging.getLogger(__name__)
 
-def fetchFromCarol(env, conn, stag, columns=None):
+def fetchFromCarol(org, env, conn, stag, columns=None):
     carol = Carol()
-    carol.switch_environment(env_name=env, app_name='zendeskdata')
+    carol.switch_environment(org_name=org, env_name=env, app_name='zendeskdata')
 
     try:
         df = Staging(carol).fetch_parquet(staging_name=stag, connector_name=conn, backend='pandas', columns=columns, cds=True)
@@ -112,9 +112,9 @@ def mapScoreTosimilarity(score):
         return 0
 
 def ingest_tickets():
-    environment, connector_name, stagging = ("datalake", "Zendesk", "tickets_articles_sts_training")
+    organization, environment, connector_name, stagging = ("totvs", "datalake", "Zendesk", "tickets_articles_sts_training")
     logger.info(f'Retrieving data from {environment}/{connector_name}/{stagging}.')
-    tickets_articles = fetchFromCarol(env=environment, conn=connector_name, stag=stagging)
+    tickets_articles = fetchFromCarol(org=organization, env=environment, conn=connector_name, stag=stagging)
 
     logger.info(f'Parsing question from article body.')
     tickets_articles["question"] = tickets_articles["body"].apply(get_question)
