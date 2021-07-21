@@ -33,7 +33,7 @@ class IngestTickets(Task):
     preproc = luigi.Parameter()
 
     def easy_run(self, inputs):
-        subject2title, subject2question = ingest_tickets()
+        subject2title, subject2question = ingest_tickets(preproc_mode=self.preproc, undersampling=self.undersampling)
 
         if len(subject2title) > 0:
             conn = self.out_connector

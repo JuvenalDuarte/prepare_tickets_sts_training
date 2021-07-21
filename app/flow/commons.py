@@ -33,7 +33,7 @@ out_connector = _settings.get('output_connector')
 # Applies random undersampling to the majority class
 undersampling = _settings.get('balance_dataset_undersampling')
 
-# Applies random undersampling to the majority class
+# Alows basic preproc = only regularize encodings; or advanced preproc = remove special chars, set lowercase and remove stopwords.
 preproc = _settings.get('preproc_mode')
 
 
