@@ -30,6 +30,13 @@ _settings = Apps(Carol()).get_settings()
 # training sets will be writen to.
 out_connector = _settings.get('output_connector')
 
+# Applies random undersampling to the majority class
+undersampling = _settings.get('balance_dataset_undersampling')
+
+# Applies random undersampling to the majority class
+preproc = _settings.get('preproc_mode')
+
+
 @Task.event_handler(luigi.Event.FAILURE)
 def mourn_failure(task, exception):
     """Will be called directly after a failed execution
@@ -50,5 +57,7 @@ def print_execution_time(self, processing_time):
 params = dict(
     version=os.environ.get('CAROLAPPVERSION', 'dev'),
     datetime = now_str,
-    out_connector=out_connector
+    out_connector=out_connector,
+    undersampling = undersampling,
+    preproc = preproc
 )

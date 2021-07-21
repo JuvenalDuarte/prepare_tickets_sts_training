@@ -89,7 +89,7 @@ def parse_satisfaction_score(txt):
 
     return score
 
-def preproc(txt):
+def preproc_basic(txt):
     # Ensure the parameter type as string
     mproc0 = str(txt)
     
@@ -104,6 +104,26 @@ def preproc(txt):
 
     return mproc3
 
+def preproc_advanced(m):
+    global custom_stopwords
+
+    # Ensure the parameter type as string
+    # Ensure the parameter type as string
+    # Set all messages to a standard encoding
+    # Replaces accentuation from chars. Ex.: "férias" becomes "ferias" 
+    mproc3 = preproc_basic(m)
+    
+    # Removes special chars from the sentence. Ex.: 
+    #  - before: "MP - SIGAEST - MATA330/MATA331 - HELP CTGNOCAD"
+    #  - after:  "MP   SIGAEST   MATA330 MATA331   HELP CTGNOCAD"
+    mproc4 = re.sub('[^0-9a-zA-Z]', " ", mproc3)
+    
+    # Sets capital to lower case maintaining full upper case tokens and remove portuguese stop words.
+    #  - before: "MP   MEU RH   Horario ou Data registrado errado em solicitacoes do MEU RH"
+    #  - after:  "MP MEU RH horario data registrado errado solicitacoes MEU RH"
+    mproc5 = " ".join([t.lower() for t in mproc4.split() if t not in custom_stopwords])
+
+    return mproc5
 
 def mapScoreTosimilarity(score):
     if score in ["good", "offered"]:
@@ -111,7 +131,25 @@ def mapScoreTosimilarity(score):
     else:
         return 0
 
-def ingest_tickets():
+def random_undersampling(df):
+    pos_samples = df[df["similarity"] == 1].copy()
+    neg_samples = df[df["similarity"] == 0].copy()
+
+    if len(pos_samples) > len(neg_samples):
+        pos_samples = pos_samples.sample(len(neg_samples))
+    else:
+        neg_samples = neg_samples.sample(len(pos_samples))
+
+    return pd.concat([pos_samples, neg_samples], ignore_index=True)
+
+def ingest_tickets(preproc_mode, undersampling):
+    global custom_stopwords
+
+    logger.info(f'Reading list of custom stopwords.')
+    # Reading stopwords  to be removed
+    with open('/app/cfg/stopwords.txt') as f:
+        custom_stopwords = f.read().splitlines()
+
     organization, environment, connector_name, stagging = ("totvs", "datalake", "Zendesk", "tickets_articles_sts_training")
     logger.info(f'Retrieving data from {environment}/{connector_name}/{stagging}.')
     tickets_articles = fetchFromCarol(org=organization, env=environment, conn=connector_name, stag=stagging)
@@ -126,6 +164,11 @@ def ingest_tickets():
     summary = tickets_articles.groupby(["satisfactionScore"])["ticket_id"].count().to_string()
     logger.info(f'Satisfaction count summary: {summary}')
 
+    if preproc_mode == "advanced":
+        preproc = preproc_advanced
+    else:
+        preproc = preproc_basic
+
     logger.info(f'Applying preprocessing to tickets subject.')
     tickets_articles["ticket_subject"] = tickets_articles["subject"].apply(preproc)
 
@@ -137,6 +180,10 @@ def ingest_tickets():
 
     logger.info(f'Mapping satisfaction to expected similarity.')
     tickets_articles["similarity"] = tickets_articles["satisfactionScore"].apply(mapScoreTosimilarity)
+
+    if undersampling:
+        logger.info(f'Balancing dataset through under sampling on the majority class.')
+        tickets_articles = random_undersampling(tickets_articles)
 
     trainingset1 = tickets_articles[["ticket_subject", "article_title", "similarity"]].copy()
     trainingset2 = tickets_articles[["ticket_subject", "article_question", "similarity"]].copy()

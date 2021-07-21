@@ -29,6 +29,8 @@ def send_data_to_carol(df, staging_name, connector_name, crosswalk):
 class IngestTickets(Task):
     out_connector = luigi.Parameter()
     datetime = luigi.Parameter() 
+    undersampling = luigi.BoolParameter() 
+    preproc = luigi.Parameter()
 
     def easy_run(self, inputs):
         subject2title, subject2question = ingest_tickets()
