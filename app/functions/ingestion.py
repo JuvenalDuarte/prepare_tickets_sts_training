@@ -142,6 +142,12 @@ def random_undersampling(df):
 
     return pd.concat([pos_samples, neg_samples], ignore_index=True)
 
+def filterTrash(ticket_subject):
+    if (len(ticket_subject) < 10) or ("chat with" in ticket_subject) or (ticket_subject in ["nan", "atendimento telefonema"]):
+        return False
+    else:
+        return True
+
 def ingest_tickets(preproc_mode, undersampling, sats_filter):
     global custom_stopwords
 
@@ -194,4 +200,15 @@ def ingest_tickets(preproc_mode, undersampling, sats_filter):
     trainingset1 = tickets_articles[["ticket_subject", "article_title", "similarity"]].copy()
     trainingset2 = tickets_articles[["ticket_subject", "article_question", "similarity"]].copy()
 
-    return trainingset1, trainingset2
+    logger.info(f'Filtering bad samples.')
+    trainingset2 = trainingset2[trainingset2["article_question"] != "nan"]
+    trainingset2 = trainingset2[trainingset2["ticket_subject"].apply(filterTrash)]
+    trainingset1 = trainingset1[trainingset1["ticket_subject"].apply(filterTrash)]
+
+    trainingset3 = trainingset1.copy()
+    trainingset3.rename(columns={"article_title":"article"}, inplace=True)
+    trainingset4 = trainingset2.copy()
+    trainingset4.rename(columns={"article_question":"article"}, inplace=True)
+    trainingset3 = pd.concat([trainingset3, trainingset4], ignore_index=True)
+
+    return trainingset1, trainingset2, trainingset3

@@ -4,6 +4,7 @@ from ..functions.delete_data import delete_data
 from ..flow.commons import Task
 import luigi
 import logging
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 luigi.auto_namespace(scope=__name__)
@@ -34,7 +35,7 @@ class IngestTickets(Task):
     satisfaction_filter = luigi.Parameter()
 
     def easy_run(self, inputs):
-        subject2title, subject2question = ingest_tickets(preproc_mode=self.preproc, undersampling=self.undersampling, sats_filter=self.satisfaction_filter)
+        subject2title, subject2question, subject2question2title = ingest_tickets(preproc_mode=self.preproc, undersampling=self.undersampling, sats_filter=self.satisfaction_filter)
 
         if len(subject2title) > 0:
             conn = self.out_connector
@@ -60,6 +61,19 @@ class IngestTickets(Task):
 
             logger.info(f'Saving {len(subject2question)} records to {conn}/{stag}.')
             send_data_to_carol(subject2question, 
+                            staging_name=stag, 
+                            connector_name=conn,
+                            crosswalk=["ticket_subject", "article_question"])
+
+            stag = "ticketsubject_articlequestiontitle_pairs"
+
+            # This output table is writen only as a reference for available articles on the API.
+            # We run a full load everytime we need to update it.
+            logger.info(f'Cleaning staging {conn}/{stag}.')
+            delete_data(staging_name=stag, connector_name=conn, full_load=True)
+
+            logger.info(f'Saving {len(subject2question)} records to {conn}/{stag}.')
+            send_data_to_carol(subject2question2title, 
                             staging_name=stag, 
                             connector_name=conn,
                             crosswalk=["ticket_subject", "article_question"])
