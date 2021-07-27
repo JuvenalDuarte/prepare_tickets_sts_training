@@ -31,9 +31,10 @@ class IngestTickets(Task):
     datetime = luigi.Parameter() 
     undersampling = luigi.BoolParameter() 
     preproc = luigi.Parameter()
+    satisfaction_filter = luigi.Parameter()
 
     def easy_run(self, inputs):
-        subject2title, subject2question = ingest_tickets(preproc_mode=self.preproc, undersampling=self.undersampling)
+        subject2title, subject2question = ingest_tickets(preproc_mode=self.preproc, undersampling=self.undersampling, sats_filter=self.satisfaction_filter)
 
         if len(subject2title) > 0:
             conn = self.out_connector

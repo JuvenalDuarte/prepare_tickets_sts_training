@@ -31,7 +31,10 @@ _settings = Apps(Carol()).get_settings()
 out_connector = _settings.get('output_connector')
 
 # Applies random undersampling to the majority class
-undersampling = _settings.get('balance_dataset_undersampling')
+undersampling = _settings.get('undersampling_mode')
+
+# Only tickets with the provided satisfaction rates will be used
+satisfaction_filter = _settings.get('satisfaction_filter')
 
 # Alows basic preproc = only regularize encodings; or advanced preproc = remove special chars, set lowercase and remove stopwords.
 preproc = _settings.get('preproc_mode')
@@ -59,5 +62,6 @@ params = dict(
     datetime = now_str,
     out_connector=out_connector,
     undersampling = undersampling,
-    preproc = preproc
+    preproc = preproc,
+    satisfaction_filter = satisfaction_filter
 )

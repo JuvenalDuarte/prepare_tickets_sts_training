@@ -142,7 +142,7 @@ def random_undersampling(df):
 
     return pd.concat([pos_samples, neg_samples], ignore_index=True)
 
-def ingest_tickets(preproc_mode, undersampling):
+def ingest_tickets(preproc_mode, undersampling, sats_filter):
     global custom_stopwords
 
     logger.info(f'Reading list of custom stopwords.')
@@ -177,6 +177,12 @@ def ingest_tickets(preproc_mode, undersampling):
 
     logger.info(f'Applying preprocessing to articles question.')
     tickets_articles["article_question"] = tickets_articles["question"].apply(preproc)
+
+    if sats_filter:
+        sats_list = [ i.lstrip().rstrip() for i in sats_filter.split(",")]
+        logger.info(f'Filtering only tickets with satisfaction score in: {sats_list}.')
+
+        tickets_articles = tickets_articles[tickets_articles["satisfactionScore"].isin(sats_list)].copy()
 
     logger.info(f'Mapping satisfaction to expected similarity.')
     tickets_articles["similarity"] = tickets_articles["satisfactionScore"].apply(mapScoreTosimilarity)
