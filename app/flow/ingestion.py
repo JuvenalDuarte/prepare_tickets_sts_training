@@ -76,7 +76,7 @@ class IngestTickets(Task):
             send_data_to_carol(subject2question2title, 
                             staging_name=stag, 
                             connector_name=conn,
-                            crosswalk=["ticket_subject", "article_question"])
+                            crosswalk=["ticket_subject", "article"])
 
             logger.info(f'Finished.')
 
