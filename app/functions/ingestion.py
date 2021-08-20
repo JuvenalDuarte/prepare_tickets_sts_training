@@ -160,6 +160,13 @@ def ingest_tickets(preproc_mode, undersampling, sats_filter):
     logger.info(f'Retrieving data from {environment}/{connector_name}/{stagging}.')
     tickets_articles = fetchFromCarol(org=organization, env=environment, conn=connector_name, stag=stagging)
 
+    organization, environment, connector_name, stagging = ("totvs", "protheusassistant", "catalogototvs", "catalogototvs")
+    logger.info(f'Retrieving data from {environment}/{connector_name}/{stagging}.')
+    totvs_catalogue = fetchFromCarol(org=organization, env=environment, conn=connector_name, stag=stagging)
+
+    logger.info(f'Merging pairs to the catalogue to retrieve product, module and segment.')
+    tickets_articles = pd.merge(tickets_articles, totvs_catalogue, on="section_id", how="inner", validate="m:1")
+
     logger.info(f'Parsing question from article body.')
     tickets_articles["question"] = tickets_articles["body"].apply(get_question)
     tickets_articles["question_type"] =  tickets_articles["body"].apply(get_question_type)
@@ -197,8 +204,8 @@ def ingest_tickets(preproc_mode, undersampling, sats_filter):
         logger.info(f'Balancing dataset through under sampling on the majority class.')
         tickets_articles = random_undersampling(tickets_articles)
 
-    trainingset1 = tickets_articles[["ticket_subject", "article_title", "similarity"]].copy()
-    trainingset2 = tickets_articles[["ticket_subject", "article_question", "similarity"]].copy()
+    trainingset1 = tickets_articles[["ticket_subject", "article_title", "similarity", "article_id", "module", "product", "segment"]].copy()
+    trainingset2 = tickets_articles[["ticket_subject", "article_question", "similarity", "article_id", "module", "product", "segment"]].copy()
 
     logger.info(f'Filtering bad samples.')
     trainingset2 = trainingset2[trainingset2["article_question"] != "nan"]
