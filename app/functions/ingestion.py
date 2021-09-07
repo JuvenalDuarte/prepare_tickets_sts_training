@@ -117,13 +117,19 @@ def preproc_advanced(m):
     #  - before: "MP - SIGAEST - MATA330/MATA331 - HELP CTGNOCAD"
     #  - after:  "MP   SIGAEST   MATA330 MATA331   HELP CTGNOCAD"
     mproc4 = re.sub('[^0-9a-zA-Z]', " ", mproc3)
-    
+
+    return mproc4
+
+def preproc_stopwords(m):
+    mproc4 = preproc_advanced(m)
+
     # Sets capital to lower case maintaining full upper case tokens and remove portuguese stop words.
     #  - before: "MP   MEU RH   Horario ou Data registrado errado em solicitacoes do MEU RH"
     #  - after:  "MP MEU RH horario data registrado errado solicitacoes MEU RH"
     mproc5 = " ".join([t.lower() for t in mproc4.split() if t not in custom_stopwords])
 
     return mproc5
+
 
 def mapScoreTosimilarity(score):
     if score in ["good", "offered"]:
@@ -179,6 +185,10 @@ def ingest_tickets(preproc_mode, undersampling, sats_filter):
 
     if preproc_mode == "advanced":
         preproc = preproc_advanced
+
+    elif preproc_mode == "stopwords":
+        preproc = preproc_stopwords
+        
     else:
         preproc = preproc_basic
 
