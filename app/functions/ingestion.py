@@ -126,7 +126,7 @@ def preproc_advanced(m):
     return mproc5
 
 def mapScoreTosimilarity(score):
-    if score in ["good", "offered"]:
+    if score in ["good"]:
         return 1
     else:
         return 0
